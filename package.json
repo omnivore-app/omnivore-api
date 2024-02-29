@@ -1,7 +1,15 @@
 {
   "name": "@omnivore/api",
   "version": "1.0.0",
-  "description": "Official nodejs client for the Omnivore API",
+  "description": "Omnivore API Client Library for Node.js",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "files": [
+    "dist/src"
+  ],
   "keywords": [
     "omnivore",
     "api",
@@ -9,7 +17,9 @@
     "nodejs"
   ],
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix"
   },
   "repository": {
     "type": "git",
@@ -22,9 +32,12 @@
   },
   "homepage": "https://github.com/omnivore-app/omnivore-api#readme",
   "dependencies": {
-    "graphql-request": "^6.1.0"
+    "gql.tada": "^1.2.1",
+    "graphql-request": "^6.1.0",
+    "urql": "^4.0.6"
   },
   "devDependencies": {
+    "@0no-co/graphqlsp": "^1.4.1",
     "@typescript-eslint/eslint-plugin": "^7.1.0",
     "@typescript-eslint/parser": "^7.1.0",
     "eslint": "^8.57.0",
@@ -34,7 +47,7 @@
     "typescript": "^5.3.3"
   },
   "volta": {
-    "node": "16.15.1",
+    "node": "18.16.1",
     "yarn": "1.22.19"
   }
 }

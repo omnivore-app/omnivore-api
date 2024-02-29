@@ -1,1 +1,1 @@
-export { Omnivore } from './omnivore'
+export { Omnivore } from './client'

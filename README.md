@@ -1,3 +1,3 @@
 # Omnivore API
 
-Official nodejs client for the Omnivore API
+Omnivore API Client Library for Node.js
