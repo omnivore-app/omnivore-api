@@ -1,0 +1,24 @@
+{
+  "name": "@omnivore/api",
+  "version": "1.0.0",
+  "description": "Official nodejs client for the Omnivore API",
+  "keywords": [
+    "omnivore",
+    "api",
+    "client",
+    "nodejs"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/omnivore-app/omnivore-api.git"
+  },
+  "author": "Omnivore",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/omnivore-app/omnivore-api/issues"
+  },
+  "homepage": "https://github.com/omnivore-app/omnivore-api#readme"
+}
