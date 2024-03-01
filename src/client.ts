@@ -221,10 +221,6 @@ const UpdatesSinceQuery = graphql(
   [SearchItemFragment, PageInfoFragment],
 )
 
-export interface UpdatesSinceParameters {
-  since: string
-}
-
 export interface UpdatesSinceResponse {
   edges: {
     itemID: string
@@ -233,6 +229,22 @@ export interface UpdatesSinceResponse {
   }[]
   pageInfo: PageInfo
 }
+
+const DeleteMutation = graphql(`
+  mutation SetBookmarkArticle($input: SetBookmarkArticleInput!) {
+    setBookmarkArticle(input: $input) {
+      __typename
+      ... on SetBookmarkArticleSuccess {
+        bookmarkedArticle {
+          id
+        }
+      }
+      ... on SetBookmarkArticleError {
+        errorCodes
+      }
+    }
+  }
+`)
 
 export class Omnivore {
   _client: Client
@@ -248,15 +260,13 @@ export class Omnivore {
       }),
     })
   }
-  // TODO-1: Implement a generic method to handle the query and mutation
-  // TODO-2: Implement a generic method to handle the response and error
-
+  
   async search(params: SearchParameters): Promise<SearchResponse> {
     const { data, error } = await this._client
       .query(SearchQuery, params)
       .toPromise()
     if (error) {
-      console.error('Search error:', error)
+      console.error('Search error:', error.message)
       throw error
     }
 
@@ -273,14 +283,12 @@ export class Omnivore {
     return data.search
   }
 
-  async updatesSince(
-    params: UpdatesSinceParameters,
-  ): Promise<UpdatesSinceResponse> {
+  async updatesSince(since: string): Promise<UpdatesSinceResponse> {
     const { data, error } = await this._client
-      .query(UpdatesSinceQuery, params)
+      .query(UpdatesSinceQuery, { since })
       .toPromise()
     if (error) {
-      console.error('UpdatesSince error:', error)
+      console.error('UpdatesSince error:', error.message)
       throw error
     }
 
@@ -297,5 +305,29 @@ export class Omnivore {
     }
 
     return data.updatesSince
+  }
+
+  async delete(id: string) {
+    const { data, error } = await this._client
+      .mutation(DeleteMutation, { input: { articleID: id, bookmark: false } })
+      .toPromise()
+    if (error) {
+      console.error('Delete error:', error.message)
+      throw error
+    }
+
+    if (!data) {
+      const error = new Error('No data returned from delete mutation')
+      console.error(error)
+      throw error
+    }
+
+    if (data.setBookmarkArticle.__typename === 'SetBookmarkArticleError') {
+      throw new Error(
+        `Delete error: ${data.setBookmarkArticle.errorCodes.join(', ')}`,
+      )
+    }
+
+    return data.setBookmarkArticle.bookmarkedArticle.id
   }
 }
