@@ -5,5 +5,3 @@ export {
   UpdatesSinceParameters,
   UpdatesSinceResponse,
 } from './client'
-
-// TODO: Add tests
