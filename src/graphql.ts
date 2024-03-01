@@ -5,10 +5,8 @@ export const graphql = initGraphQLTada<{
   introspection: introspection
 
   scalars: {
-    Date: any
+    ID: string
+    Date: string
     JSON: any
   }
 }>()
-
-export { readFragment } from 'gql.tada'
-export type { FragmentOf, ResultOf, VariablesOf } from 'gql.tada'
