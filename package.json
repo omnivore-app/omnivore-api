@@ -33,7 +33,6 @@
   "homepage": "https://github.com/omnivore-app/omnivore-api#readme",
   "dependencies": {
     "gql.tada": "^1.2.1",
-    "graphql-request": "^6.1.0",
     "urql": "^4.0.6"
   },
   "devDependencies": {
