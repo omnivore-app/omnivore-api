@@ -231,7 +231,7 @@ export interface UpdatesSinceResponse {
 }
 
 const DeleteMutation = graphql(`
-  mutation SetBookmarkArticle($input: SetBookmarkArticleInput!) {
+  mutation Delete($input: SetBookmarkArticleInput!) {
     setBookmarkArticle(input: $input) {
       __typename
       ... on SetBookmarkArticleSuccess {
@@ -245,6 +245,43 @@ const DeleteMutation = graphql(`
     }
   }
 `)
+
+const saveByURLMutation = graphql(`
+  mutation SaveByURL($input: SaveUrlInput!) {
+    saveUrl(input: $input) {
+      __typename
+      ... on SaveSuccess {
+        clientRequestId
+      }
+      ... on SaveError {
+        errorCodes
+      }
+    }
+  }
+`)
+
+export interface SaveByURLParameters {
+  url: string
+  clientRequestId?: string
+  source?: string
+  state?:
+    | 'DELETED'
+    | 'ARCHIVED'
+    | 'CONTENT_NOT_FETCHED'
+    | 'FAILED'
+    | 'PROCESSING'
+    | 'SUCCEEDED'
+  timezone?: string
+  locale?: string
+  folder?: string
+  labels?: {
+    name: string
+    color?: string
+    description?: string
+  }[]
+  publishedAt: string
+  savedAt: string
+}
 
 export class Omnivore {
   _client: Client
@@ -260,7 +297,7 @@ export class Omnivore {
       }),
     })
   }
-  
+
   async search(params: SearchParameters): Promise<SearchResponse> {
     const { data, error } = await this._client
       .query(SearchQuery, params)
@@ -329,5 +366,33 @@ export class Omnivore {
     }
 
     return data.setBookmarkArticle.bookmarkedArticle.id
+  }
+
+  async saveByURL(params: SaveByURLParameters) {
+    const { data, error } = await this._client
+      .mutation(saveByURLMutation, {
+        input: {
+          ...params,
+          source: params.source || 'API-Client',
+          clientRequestId: params.clientRequestId || '',
+        },
+      })
+      .toPromise()
+    if (error) {
+      console.error('SaveByURL error:', error.message)
+      throw error
+    }
+
+    if (!data) {
+      const error = new Error('No data returned from saveByURL mutation')
+      console.error(error)
+      throw error
+    }
+
+    if (data.saveUrl.__typename === 'SaveError') {
+      throw new Error(`SaveByURL error: ${data.saveUrl.errorCodes.join(', ')}`)
+    }
+
+    return data.saveUrl.clientRequestId
   }
 }
