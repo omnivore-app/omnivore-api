@@ -1,95 +1,120 @@
 import { Client, fetchExchange } from 'urql'
 import { graphql } from './graphql'
 
-const SearchQuery = graphql(`
-  query Search(
-    $after: String
-    $first: Int
-    $format: String
-    $includeContent: Boolean
-    $query: String
-  ) {
-    search(
-      after: $after
-      first: $first
-      format: $format
-      includeContent: $includeContent
-      query: $query
-    ) {
-      __typename
-      ... on SearchSuccess {
-        edges {
-          cursor
-          node {
-            id
-            title
-            siteName
-            originalArticleUrl
-            author
-            description
-            slug
-            labels {
-              name
-              color
-              createdAt
-              id
-              internal
-              source
-              description
-            }
-            highlights {
-              id
-              quote
-              annotation
-              patch
-              updatedAt
-              labels {
-                name
-                color
-                createdAt
-                id
-                internal
-                source
-                description
-              }
-              type
-              highlightPositionPercent
-              color
-              highlightPositionAnchorIndex
-              prefix
-              suffix
-              createdByMe
-              createdAt
-            }
-            updatedAt
-            savedAt
-            pageType
-            content
-            publishedAt
-            url
-            image
-            readAt
-            wordsCount
-            readingProgressPercent
-            isArchived
-            archivedAt
-            contentReader
-          }
-        }
-        pageInfo {
-          hasNextPage
-          hasPreviousPage
-          startCursor
-          endCursor
-          totalCount
-        }
-      }
-      ... on SearchError {
-        errorCodes
-      }
-    }
+const LabelFragment = graphql(`
+  fragment LabelFragment on Label @_unmask {
+    name
+    color
+    createdAt
+    id
+    internal
+    source
+    description
   }
 `)
+
+const HighlightFragment = graphql(
+  `
+    fragment HighlightFragment on Highlight @_unmask {
+      id
+      quote
+      annotation
+      patch
+      updatedAt
+      labels {
+        ...LabelFragment
+      }
+      type
+      highlightPositionPercent
+      color
+      highlightPositionAnchorIndex
+      prefix
+      suffix
+      createdAt
+    }
+  `,
+  [LabelFragment],
+)
+
+const SearchItemFragment = graphql(
+  `
+    fragment SearchItemFragment on SearchItem @_unmask {
+      id
+      title
+      siteName
+      originalArticleUrl
+      author
+      description
+      slug
+      labels {
+        ...LabelFragment
+      }
+      highlights {
+        ...HighlightFragment
+      }
+      updatedAt
+      savedAt
+      pageType
+      content
+      publishedAt
+      url
+      image
+      readAt
+      wordsCount
+      readingProgressPercent
+      isArchived
+      archivedAt
+      contentReader
+    }
+  `,
+  [LabelFragment, HighlightFragment],
+)
+
+const PageInfoFragment = graphql(`
+  fragment PageInfoFragment on PageInfo @_unmask {
+    hasNextPage
+    hasPreviousPage
+    startCursor
+    endCursor
+    totalCount
+  }
+`)
+
+const SearchQuery = graphql(
+  `
+    query Search(
+      $after: String
+      $first: Int
+      $format: String
+      $includeContent: Boolean
+      $query: String
+    ) {
+      search(
+        after: $after
+        first: $first
+        format: $format
+        includeContent: $includeContent
+        query: $query
+      ) {
+        __typename
+        ... on SearchSuccess {
+          edges {
+            node {
+              ...SearchItemFragment
+            }
+          }
+          pageInfo {
+            ...PageInfoFragment
+          }
+        }
+        ... on SearchError {
+          errorCodes
+        }
+      }
+    }
+  `,
+  [SearchItemFragment, PageInfoFragment],
+)
 
 type PageType =
   | 'ARTICLE'
@@ -170,85 +195,31 @@ export interface SearchResponse {
   pageInfo: PageInfo
 }
 
-const UpdatesSinceQuery = graphql(`
-  query UpdatesSince($since: Date!) {
-    updatesSince(since: $since) {
-      __typename
-      ... on UpdatesSinceSuccess {
-        edges {
-          cursor
-          itemID
-          updateReason
-          node {
-            id
-            title
-            siteName
-            originalArticleUrl
-            author
-            description
-            slug
-            labels {
-              name
-              color
-              createdAt
-              id
-              internal
-              source
-              description
+const UpdatesSinceQuery = graphql(
+  `
+    query UpdatesSince($since: Date!) {
+      updatesSince(since: $since) {
+        __typename
+        ... on UpdatesSinceSuccess {
+          edges {
+            itemID
+            updateReason
+            node {
+              ...SearchItemFragment
             }
-            highlights {
-              id
-              quote
-              annotation
-              patch
-              updatedAt
-              labels {
-                name
-                color
-                createdAt
-                id
-                internal
-                source
-                description
-              }
-              type
-              highlightPositionPercent
-              color
-              highlightPositionAnchorIndex
-              prefix
-              suffix
-              createdByMe
-              createdAt
-            }
-            updatedAt
-            savedAt
-            pageType
-            content
-            publishedAt
-            url
-            image
-            readAt
-            wordsCount
-            readingProgressPercent
-            isArchived
-            archivedAt
-            contentReader
+          }
+          pageInfo {
+            ...PageInfoFragment
           }
         }
-        pageInfo {
-          hasNextPage
-          hasPreviousPage
-          startCursor
-          endCursor
-          totalCount
+        ... on UpdatesSinceError {
+          errorCodes
         }
       }
-      ... on UpdatesSinceError {
-        errorCodes
-      }
     }
-  }
-`)
+  `,
+  [SearchItemFragment, PageInfoFragment],
+)
 
 export interface UpdatesSinceParameters {
   since: string
@@ -256,6 +227,8 @@ export interface UpdatesSinceParameters {
 
 export interface UpdatesSinceResponse {
   edges: {
+    itemID: string
+    updateReason: 'CREATED' | 'UPDATED' | 'DELETED'
     node: Node | null
   }[]
   pageInfo: PageInfo
