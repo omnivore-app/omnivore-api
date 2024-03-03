@@ -116,7 +116,7 @@ const SearchQuery = graphql(
   [SearchItemFragment, PageInfoFragment],
 )
 
-type PageType =
+export type PageType =
   | 'ARTICLE'
   | 'BOOK'
   | 'FILE'
@@ -128,13 +128,13 @@ type PageType =
   | 'IMAGE'
   | 'HIGHLIGHTS' // This is a special page type for the highlights page
 
-interface Label {
+export interface Label {
   name: string
 }
 
-type HighlightType = 'HIGHLIGHT' | 'NOTE' | 'REDACTION'
+export type HighlightType = 'HIGHLIGHT' | 'NOTE' | 'REDACTION'
 
-interface Highlight {
+export interface Highlight {
   id: string
   quote: string | null
   annotation: string | null
@@ -147,7 +147,7 @@ interface Highlight {
   highlightPositionAnchorIndex: number | null
 }
 
-interface Node {
+export interface Node {
   id: string
   title: string
   siteName: string | null
@@ -172,7 +172,7 @@ interface Node {
   contentReader: string | null
 }
 
-interface PageInfo {
+export interface PageInfo {
   hasNextPage: boolean
   hasPreviousPage: boolean
   startCursor: string | null

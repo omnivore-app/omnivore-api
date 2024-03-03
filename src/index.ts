@@ -2,6 +2,9 @@ export {
   Omnivore,
   SearchParameters,
   SearchResponse,
-  UpdatesSinceParameters,
   UpdatesSinceResponse,
+  SaveByURLParameters,
+  Node,
+  PageInfo,
+  PageType,
 } from './client'
