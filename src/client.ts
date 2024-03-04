@@ -116,6 +116,62 @@ const SearchQuery = graphql(
   [SearchItemFragment, PageInfoFragment],
 )
 
+const UpdatesSinceQuery = graphql(
+  `
+    query UpdatesSince($since: Date!) {
+      updatesSince(since: $since) {
+        __typename
+        ... on UpdatesSinceSuccess {
+          edges {
+            itemID
+            updateReason
+            node {
+              ...SearchItemFragment
+            }
+          }
+          pageInfo {
+            ...PageInfoFragment
+          }
+        }
+        ... on UpdatesSinceError {
+          errorCodes
+        }
+      }
+    }
+  `,
+  [SearchItemFragment, PageInfoFragment],
+)
+
+const DeleteMutation = graphql(`
+  mutation Delete($input: SetBookmarkArticleInput!) {
+    setBookmarkArticle(input: $input) {
+      __typename
+      ... on SetBookmarkArticleSuccess {
+        bookmarkedArticle {
+          id
+        }
+      }
+      ... on SetBookmarkArticleError {
+        errorCodes
+      }
+    }
+  }
+`)
+
+const saveByURLMutation = graphql(`
+  mutation SaveByURL($input: SaveUrlInput!) {
+    saveUrl(input: $input) {
+      __typename
+      ... on SaveSuccess {
+        clientRequestId
+      }
+      ... on SaveError {
+        errorCodes
+      }
+    }
+  }
+`)
+
 export type PageType =
   | 'ARTICLE'
   | 'BOOK'
@@ -195,32 +251,6 @@ export interface SearchResponse {
   pageInfo: PageInfo
 }
 
-const UpdatesSinceQuery = graphql(
-  `
-    query UpdatesSince($since: Date!) {
-      updatesSince(since: $since) {
-        __typename
-        ... on UpdatesSinceSuccess {
-          edges {
-            itemID
-            updateReason
-            node {
-              ...SearchItemFragment
-            }
-          }
-          pageInfo {
-            ...PageInfoFragment
-          }
-        }
-        ... on UpdatesSinceError {
-          errorCodes
-        }
-      }
-    }
-  `,
-  [SearchItemFragment, PageInfoFragment],
-)
-
 export interface UpdatesSinceResponse {
   edges: {
     itemID: string
@@ -229,36 +259,6 @@ export interface UpdatesSinceResponse {
   }[]
   pageInfo: PageInfo
 }
-
-const DeleteMutation = graphql(`
-  mutation Delete($input: SetBookmarkArticleInput!) {
-    setBookmarkArticle(input: $input) {
-      __typename
-      ... on SetBookmarkArticleSuccess {
-        bookmarkedArticle {
-          id
-        }
-      }
-      ... on SetBookmarkArticleError {
-        errorCodes
-      }
-    }
-  }
-`)
-
-const saveByURLMutation = graphql(`
-  mutation SaveByURL($input: SaveUrlInput!) {
-    saveUrl(input: $input) {
-      __typename
-      ... on SaveSuccess {
-        clientRequestId
-      }
-      ... on SaveError {
-        errorCodes
-      }
-    }
-  }
-`)
 
 export interface SaveByURLParameters {
   url: string
@@ -283,6 +283,14 @@ export interface SaveByURLParameters {
   savedAt: string
 }
 
+export interface DeleteResponse {
+  id: string
+}
+
+export interface SaveByURLResponse {
+  id: string
+}
+
 export class Omnivore {
   _client: Client
 
@@ -303,14 +311,11 @@ export class Omnivore {
       .query(SearchQuery, params)
       .toPromise()
     if (error) {
-      console.error('Search error:', error.message)
-      throw error
+      throw new Error(`Search error: ${error.message}`)
     }
 
     if (!data) {
-      const error = new Error('No data returned from search query')
-      console.error(error)
-      throw error
+      throw new Error('Search error: No data returned')
     }
 
     if (data.search.__typename === 'SearchError') {
@@ -325,14 +330,11 @@ export class Omnivore {
       .query(UpdatesSinceQuery, { since })
       .toPromise()
     if (error) {
-      console.error('UpdatesSince error:', error.message)
-      throw error
+      throw new Error(`UpdatesSince error: ${error.message}`)
     }
 
     if (!data) {
-      const error = new Error('No data returned from updatesSince query')
-      console.error(error)
-      throw error
+      throw new Error('UpdatesSince error: No data returned')
     }
 
     if (data.updatesSince.__typename === 'UpdatesSinceError') {
@@ -344,19 +346,16 @@ export class Omnivore {
     return data.updatesSince
   }
 
-  async delete(id: string) {
+  async delete(id: string): Promise<DeleteResponse> {
     const { data, error } = await this._client
       .mutation(DeleteMutation, { input: { articleID: id, bookmark: false } })
       .toPromise()
     if (error) {
-      console.error('Delete error:', error.message)
-      throw error
+      throw new Error(`Delete error: ${error.message}`)
     }
 
     if (!data) {
-      const error = new Error('No data returned from delete mutation')
-      console.error(error)
-      throw error
+      throw new Error('Delete error: No data returned')
     }
 
     if (data.setBookmarkArticle.__typename === 'SetBookmarkArticleError') {
@@ -365,10 +364,10 @@ export class Omnivore {
       )
     }
 
-    return data.setBookmarkArticle.bookmarkedArticle.id
+    return { id: data.setBookmarkArticle.bookmarkedArticle.id }
   }
 
-  async saveByURL(params: SaveByURLParameters) {
+  async saveByURL(params: SaveByURLParameters): Promise<SaveByURLResponse> {
     const { data, error } = await this._client
       .mutation(saveByURLMutation, {
         input: {
@@ -379,20 +378,17 @@ export class Omnivore {
       })
       .toPromise()
     if (error) {
-      console.error('SaveByURL error:', error.message)
-      throw error
+      throw new Error(`SaveByURL error: ${error.message}`)
     }
 
     if (!data) {
-      const error = new Error('No data returned from saveByURL mutation')
-      console.error(error)
-      throw error
+      throw new Error('SaveByURL error: No data returned')
     }
 
     if (data.saveUrl.__typename === 'SaveError') {
       throw new Error(`SaveByURL error: ${data.saveUrl.errorCodes.join(', ')}`)
     }
 
-    return data.saveUrl.clientRequestId
+    return { id: data.saveUrl.clientRequestId }
   }
 }
