@@ -7,4 +7,9 @@ export {
   Node,
   PageInfo,
   PageType,
+  SaveByURLResponse,
+  DeleteResponse,
+  Highlight,
+  HighlightType,
+  Label,
 } from './client'
