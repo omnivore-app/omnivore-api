@@ -22,7 +22,7 @@ const omnivore = new Omnivore({
   baseUrl: 'https://api-prod.omnivore.app',
 })
 
-const items = await omnivore.search({
+const items = await omnivore.items.search({
   // ...
 })
 ```
@@ -33,7 +33,7 @@ The library will throw an error if the request fails. You can catch the error an
 
 ```javascript
 try {
-  const items = await omnivore.search({
+  const items = await omnivore.items.search({
     // ...
   })
 } catch (error: unknown) {

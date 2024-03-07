@@ -299,10 +299,10 @@ export interface SaveByURLResponse {
 }
 
 export class Omnivore {
-  _client: Client
+  private client: Client
 
   constructor(clientOptions: ClientOptions) {
-    this._client = new Client({
+    this.client = new Client({
       url: `${clientOptions.baseUrl}/api/graphql`,
       exchanges: [fetchExchange],
       fetchOptions: () => ({
@@ -314,73 +314,81 @@ export class Omnivore {
     })
   }
 
-  async search(params: SearchParameters): Promise<SearchResponse> {
-    const { data, error } = await this._client
-      .query(SearchQuery, params)
-      .toPromise()
-    const search = data?.search
-    if (error || !search || search.__typename === 'SearchError') {
-      const err = buildOmnivoreError(search, error)
-      console.error('Search error', err)
-      throw err
-    }
+  public readonly items = {
+    search: async (params: SearchParameters): Promise<SearchResponse> => {
+      const { data, error } = await this.client
+        .query(SearchQuery, params)
+        .toPromise()
 
-    return search
-  }
+      const search = data?.search
+      if (error || !search || search.__typename === 'SearchError') {
+        const err = buildOmnivoreError(search, error)
+        console.error('Search error', err)
+        throw err
+      }
 
-  async updatesSince(since: string): Promise<UpdatesSinceResponse> {
-    const { data, error } = await this._client
-      .query(UpdatesSinceQuery, { since })
-      .toPromise()
-    const updatesSince = data?.updatesSince
-    if (
-      error ||
-      !updatesSince ||
-      updatesSince.__typename === 'UpdatesSinceError'
-    ) {
-      const err = buildOmnivoreError(updatesSince, error)
-      console.error('UpdatesSince error', err)
-      throw err
-    }
+      return search
+    },
 
-    return updatesSince
-  }
+    updates: async (since: string): Promise<UpdatesSinceResponse> => {
+      const { data, error } = await this.client
+        .query(UpdatesSinceQuery, { since })
+        .toPromise()
 
-  async delete(id: string): Promise<DeleteResponse> {
-    const { data, error } = await this._client
-      .mutation(DeleteMutation, { input: { articleID: id, bookmark: false } })
-      .toPromise()
-    const deleteArticle = data?.setBookmarkArticle
-    if (
-      error ||
-      !deleteArticle ||
-      deleteArticle.__typename === 'SetBookmarkArticleError'
-    ) {
-      const err = buildOmnivoreError(deleteArticle, error)
-      console.error('Delete error', err)
-      throw err
-    }
+      const updatesSince = data?.updatesSince
+      if (
+        error ||
+        !updatesSince ||
+        updatesSince.__typename === 'UpdatesSinceError'
+      ) {
+        const err = buildOmnivoreError(updatesSince, error)
+        console.error('UpdatesSince error', err)
+        throw err
+      }
 
-    return { id: deleteArticle.bookmarkedArticle.id }
-  }
+      return updatesSince
+    },
 
-  async saveByURL(params: SaveByURLParameters): Promise<SaveByURLResponse> {
-    const { data, error } = await this._client
-      .mutation(saveByURLMutation, {
-        input: {
-          ...params,
-          source: params.source || 'API-Client',
-          clientRequestId: params.clientRequestId || '',
-        },
-      })
-      .toPromise()
-    const saveUrl = data?.saveUrl
-    if (error || !saveUrl || saveUrl.__typename === 'SaveError') {
-      const err = buildOmnivoreError(saveUrl, error)
-      console.error('SaveByURL error', err)
-      throw err
-    }
+    delete: async (id: string): Promise<DeleteResponse> => {
+      const { data, error } = await this.client
+        .mutation(DeleteMutation, { input: { articleID: id, bookmark: false } })
+        .toPromise()
 
-    return { id: saveUrl.clientRequestId }
+      const deleteArticle = data?.setBookmarkArticle
+      if (
+        error ||
+        !deleteArticle ||
+        deleteArticle.__typename === 'SetBookmarkArticleError'
+      ) {
+        const err = buildOmnivoreError(deleteArticle, error)
+        console.error('Delete error', err)
+        throw err
+      }
+
+      return { id: deleteArticle.bookmarkedArticle.id }
+    },
+
+    saveByUrl: async (
+      params: SaveByURLParameters,
+    ): Promise<SaveByURLResponse> => {
+      const { data, error } = await this.client
+        .mutation(saveByURLMutation, {
+          input: {
+            ...params,
+            source: params.source || 'API-Client',
+            clientRequestId: params.clientRequestId || '',
+          },
+        })
+        .toPromise()
+
+      const saveUrl = data?.saveUrl
+      if (error || !saveUrl || saveUrl.__typename === 'SaveError') {
+        const err = buildOmnivoreError(saveUrl, error)
+        console.error('SaveByURL error', err)
+        throw err
+      }
+
+      return { id: saveUrl.clientRequestId }
+    },
   }
 }
