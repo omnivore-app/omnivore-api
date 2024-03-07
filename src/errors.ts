@@ -1,5 +1,6 @@
 import { CombinedError } from 'urql'
 
+// Error codes are used to identify the type of error that occurred
 export enum OmnivoreErrorCode {
   GraphQLError = 'GRAPHQL_ERROR',
   NetworkError = 'NETWORK_ERROR',
@@ -31,6 +32,7 @@ class UnknownError extends OmnivoreErrorBase<OmnivoreErrorCode> {
   }
 }
 
+// OmnivoreError is a union type of all possible errors
 export type OmnivoreError = GraphQLError | NetworkError | UnknownError
 
 export const buildOmnivoreError = (

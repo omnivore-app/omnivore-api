@@ -1,183 +1,17 @@
 import { Client, fetchExchange } from 'urql'
 import { buildOmnivoreError } from './errors'
-import { graphql } from './graphql'
+import {
+  DeleteMutation,
+  SearchQuery,
+  UpdatesSinceQuery,
+  saveByURLMutation,
+} from './graphql'
 
 export interface ClientOptions {
   authToken: string
-  baseUrl: string
+  baseUrl?: string
   timeoutMs?: number
 }
-
-const LabelFragment = graphql(`
-  fragment LabelFragment on Label @_unmask {
-    name
-    color
-    createdAt
-    id
-    internal
-    source
-    description
-  }
-`)
-
-const HighlightFragment = graphql(
-  `
-    fragment HighlightFragment on Highlight @_unmask {
-      id
-      quote
-      annotation
-      patch
-      updatedAt
-      labels {
-        ...LabelFragment
-      }
-      type
-      highlightPositionPercent
-      color
-      highlightPositionAnchorIndex
-      prefix
-      suffix
-      createdAt
-    }
-  `,
-  [LabelFragment],
-)
-
-const SearchItemFragment = graphql(
-  `
-    fragment SearchItemFragment on SearchItem @_unmask {
-      id
-      title
-      siteName
-      originalArticleUrl
-      author
-      description
-      slug
-      labels {
-        ...LabelFragment
-      }
-      highlights {
-        ...HighlightFragment
-      }
-      updatedAt
-      savedAt
-      pageType
-      content
-      publishedAt
-      url
-      image
-      readAt
-      wordsCount
-      readingProgressPercent
-      isArchived
-      archivedAt
-      contentReader
-    }
-  `,
-  [LabelFragment, HighlightFragment],
-)
-
-const PageInfoFragment = graphql(`
-  fragment PageInfoFragment on PageInfo @_unmask {
-    hasNextPage
-    hasPreviousPage
-    startCursor
-    endCursor
-    totalCount
-  }
-`)
-
-const SearchQuery = graphql(
-  `
-    query Search(
-      $after: String
-      $first: Int
-      $format: String
-      $includeContent: Boolean
-      $query: String
-    ) {
-      search(
-        after: $after
-        first: $first
-        format: $format
-        includeContent: $includeContent
-        query: $query
-      ) {
-        __typename
-        ... on SearchSuccess {
-          edges {
-            node {
-              ...SearchItemFragment
-            }
-          }
-          pageInfo {
-            ...PageInfoFragment
-          }
-        }
-        ... on SearchError {
-          errorCodes
-        }
-      }
-    }
-  `,
-  [SearchItemFragment, PageInfoFragment],
-)
-
-const UpdatesSinceQuery = graphql(
-  `
-    query UpdatesSince($since: Date!) {
-      updatesSince(since: $since) {
-        __typename
-        ... on UpdatesSinceSuccess {
-          edges {
-            itemID
-            updateReason
-            node {
-              ...SearchItemFragment
-            }
-          }
-          pageInfo {
-            ...PageInfoFragment
-          }
-        }
-        ... on UpdatesSinceError {
-          errorCodes
-        }
-      }
-    }
-  `,
-  [SearchItemFragment, PageInfoFragment],
-)
-
-const DeleteMutation = graphql(`
-  mutation Delete($input: SetBookmarkArticleInput!) {
-    setBookmarkArticle(input: $input) {
-      __typename
-      ... on SetBookmarkArticleSuccess {
-        bookmarkedArticle {
-          id
-        }
-      }
-      ... on SetBookmarkArticleError {
-        errorCodes
-      }
-    }
-  }
-`)
-
-const saveByURLMutation = graphql(`
-  mutation SaveByURL($input: SaveUrlInput!) {
-    saveUrl(input: $input) {
-      __typename
-      ... on SaveSuccess {
-        clientRequestId
-      }
-      ... on SaveError {
-        errorCodes
-      }
-    }
-  }
-`)
 
 export type PageType =
   | 'ARTICLE'
@@ -303,7 +137,7 @@ export class Omnivore {
 
   constructor(clientOptions: ClientOptions) {
     this.client = new Client({
-      url: `${clientOptions.baseUrl}/api/graphql`,
+      url: `${clientOptions.baseUrl || 'https://api-prod.omnivore.app'}/api/graphql`,
       exchanges: [fetchExchange],
       fetchOptions: () => ({
         headers: {
@@ -314,7 +148,9 @@ export class Omnivore {
     })
   }
 
+  // Omnivore API methods
   public readonly items = {
+    // search for items
     search: async (params: SearchParameters): Promise<SearchResponse> => {
       const { data, error } = await this.client
         .query(SearchQuery, params)
@@ -330,6 +166,7 @@ export class Omnivore {
       return search
     },
 
+    // get updates since a given date
     updates: async (since: string): Promise<UpdatesSinceResponse> => {
       const { data, error } = await this.client
         .query(UpdatesSinceQuery, { since })
@@ -349,6 +186,7 @@ export class Omnivore {
       return updatesSince
     },
 
+    // delete an item
     delete: async (id: string): Promise<DeleteResponse> => {
       const { data, error } = await this.client
         .mutation(DeleteMutation, { input: { articleID: id, bookmark: false } })
@@ -368,6 +206,7 @@ export class Omnivore {
       return { id: deleteArticle.bookmarkedArticle.id }
     },
 
+    // save an item by URL
     saveByUrl: async (
       params: SaveByURLParameters,
     ): Promise<SaveByURLResponse> => {
