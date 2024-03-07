@@ -1,6 +1,6 @@
 export {
   ClientOptions,
-  DeleteResponse,
+  DeleteItemResponse as DeleteResponse,
   Highlight,
   HighlightType,
   Label,
@@ -8,11 +8,11 @@ export {
   Omnivore,
   PageInfo,
   PageType,
-  SaveByURLParameters,
-  SaveByURLResponse,
-  SearchParameters,
-  SearchResponse,
-  UpdatesSinceResponse,
+  SaveItemByUrlParameters as SaveByURLParameters,
+  SaveItemByUrlResponse as SaveByURLResponse,
+  SearchItemParameters as SearchParameters,
+  SearchItemResponse as SearchResponse,
+  ItemUpdatesResponse as UpdatesSinceResponse,
 } from './client'
 
 export { OmnivoreError, OmnivoreErrorCode, isOmnivoreError } from './errors'

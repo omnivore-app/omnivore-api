@@ -77,22 +77,26 @@ export interface PageInfo {
   totalCount: number | null
 }
 
-export interface SearchParameters {
+export interface SearchItemParameters {
   after?: string
   first?: number
-  format?: string
+  format?: 'html' | 'markdown'
   includeContent?: boolean
   query?: string
 }
 
-export interface SearchResponse {
+export interface SearchItemResponse {
   edges: {
     node: Node
   }[]
   pageInfo: PageInfo
 }
 
-export interface UpdatesSinceResponse {
+export interface ItemUpdatesParameters {
+  since: string
+}
+
+export interface ItemUpdatesResponse {
   edges: {
     itemID: string
     updateReason: 'CREATED' | 'UPDATED' | 'DELETED'
@@ -101,7 +105,7 @@ export interface UpdatesSinceResponse {
   pageInfo: PageInfo
 }
 
-export interface SaveByURLParameters {
+export interface SaveItemByUrlParameters {
   url: string
   clientRequestId?: string
   source?: string
@@ -124,11 +128,15 @@ export interface SaveByURLParameters {
   savedAt: string
 }
 
-export interface DeleteResponse {
+export interface SaveItemByUrlResponse {
   id: string
 }
 
-export interface SaveByURLResponse {
+export interface DeleteItemParameters {
+  id: string
+}
+
+export interface DeleteItemResponse {
   id: string
 }
 
@@ -151,7 +159,9 @@ export class Omnivore {
   // Omnivore API methods
   public readonly items = {
     // search for items
-    search: async (params: SearchParameters): Promise<SearchResponse> => {
+    search: async (
+      params: SearchItemParameters,
+    ): Promise<SearchItemResponse> => {
       const { data, error } = await this.client
         .query(SearchQuery, params)
         .toPromise()
@@ -167,9 +177,11 @@ export class Omnivore {
     },
 
     // get updates since a given date
-    updates: async (since: string): Promise<UpdatesSinceResponse> => {
+    updates: async (
+      params: ItemUpdatesParameters,
+    ): Promise<ItemUpdatesResponse> => {
       const { data, error } = await this.client
-        .query(UpdatesSinceQuery, { since })
+        .query(UpdatesSinceQuery, params)
         .toPromise()
 
       const updatesSince = data?.updatesSince
@@ -187,9 +199,13 @@ export class Omnivore {
     },
 
     // delete an item
-    delete: async (id: string): Promise<DeleteResponse> => {
+    delete: async (
+      params: DeleteItemParameters,
+    ): Promise<DeleteItemResponse> => {
       const { data, error } = await this.client
-        .mutation(DeleteMutation, { input: { articleID: id, bookmark: false } })
+        .mutation(DeleteMutation, {
+          input: { articleID: params.id, bookmark: false },
+        })
         .toPromise()
 
       const deleteArticle = data?.setBookmarkArticle
@@ -208,8 +224,8 @@ export class Omnivore {
 
     // save an item by URL
     saveByUrl: async (
-      params: SaveByURLParameters,
-    ): Promise<SaveByURLResponse> => {
+      params: SaveItemByUrlParameters,
+    ): Promise<SaveItemByUrlResponse> => {
       const { data, error } = await this.client
         .mutation(saveByURLMutation, {
           input: {

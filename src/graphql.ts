@@ -11,6 +11,16 @@ const graphql = initGraphQLTada<{
   }
 }>()
 
+const PageInfoFragment = graphql(`
+  fragment PageInfoFragment on PageInfo @_unmask {
+    hasNextPage
+    hasPreviousPage
+    startCursor
+    endCursor
+    totalCount
+  }
+`)
+
 const LabelFragment = graphql(`
   fragment LabelFragment on Label @_unmask {
     name
@@ -104,11 +114,7 @@ export const SearchQuery = graphql(
             }
           }
           pageInfo {
-            hasNextPage
-            hasPreviousPage
-            startCursor
-            endCursor
-            totalCount
+            ...PageInfoFragment
           }
         }
         ... on SearchError {
@@ -117,7 +123,7 @@ export const SearchQuery = graphql(
       }
     }
   `,
-  [SearchItemFragment],
+  [SearchItemFragment, PageInfoFragment],
 )
 
 export const UpdatesSinceQuery = graphql(
@@ -134,11 +140,7 @@ export const UpdatesSinceQuery = graphql(
             }
           }
           pageInfo {
-            hasNextPage
-            hasPreviousPage
-            startCursor
-            endCursor
-            totalCount
+            ...PageInfoFragment
           }
         }
         ... on UpdatesSinceError {
@@ -147,7 +149,7 @@ export const UpdatesSinceQuery = graphql(
       }
     }
   `,
-  [SearchItemFragment],
+  [SearchItemFragment, PageInfoFragment],
 )
 
 export const DeleteMutation = graphql(`
