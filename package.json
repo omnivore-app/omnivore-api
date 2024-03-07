@@ -1,5 +1,5 @@
 {
-  "name": "@omnivore/api",
+  "name": "@omnivore-app/api",
   "version": "1.0.0",
   "description": "Omnivore API Client Library for Node.js",
   "main": "./dist/src/index.js",

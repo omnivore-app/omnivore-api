@@ -7,7 +7,7 @@
 ## Installation
 
 ```bash
-npm install @omnivore/api
+npm install @omnivore-app/api
 ```
 
 ## Usage
@@ -17,7 +17,7 @@ npm install @omnivore/api
 Import the `Omnivore` class and create a new instance with your **API Key** and **Base URL**. Then you can use the instance to make requests to the Omnivore API.
 
 ```javascript
-import { Omnivore } from '@omnivore/api'
+import { Omnivore } from '@omnivore-app/api'
 
 const omnivore = new Omnivore({
   authToken: 'your-auth-token',
