@@ -1,15 +1,18 @@
 export {
-  Omnivore,
-  SearchParameters,
-  SearchResponse,
-  UpdatesSinceResponse,
-  SaveByURLParameters,
-  Node,
-  PageInfo,
-  PageType,
-  SaveByURLResponse,
+  ClientOptions,
   DeleteResponse,
   Highlight,
   HighlightType,
   Label,
+  Node,
+  Omnivore,
+  PageInfo,
+  PageType,
+  SaveByURLParameters,
+  SaveByURLResponse,
+  SearchParameters,
+  SearchResponse,
+  UpdatesSinceResponse,
 } from './client'
+
+export { OmnivoreError, OmnivoreErrorCode } from './errors'

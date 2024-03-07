@@ -1,4 +1,5 @@
 import { Client, fetchExchange } from 'urql'
+import { buildOmnivoreError } from './errors'
 import { graphql } from './graphql'
 
 export interface ClientOptions {
@@ -317,61 +318,50 @@ export class Omnivore {
     const { data, error } = await this._client
       .query(SearchQuery, params)
       .toPromise()
-    if (error) {
-      throw new Error(`Search error: ${error.message}`)
+    const search = data?.search
+    if (error || !search || search.__typename === 'SearchError') {
+      const err = buildOmnivoreError(search, error)
+      console.error('Search error', err)
+      throw err
     }
 
-    if (!data) {
-      throw new Error('Search error: No data returned')
-    }
-
-    if (data.search.__typename === 'SearchError') {
-      throw new Error(`Search error: ${data.search.errorCodes.join(', ')}`)
-    }
-
-    return data.search
+    return search
   }
 
   async updatesSince(since: string): Promise<UpdatesSinceResponse> {
     const { data, error } = await this._client
       .query(UpdatesSinceQuery, { since })
       .toPromise()
-    if (error) {
-      throw new Error(`UpdatesSince error: ${error.message}`)
+    const updatesSince = data?.updatesSince
+    if (
+      error ||
+      !updatesSince ||
+      updatesSince.__typename === 'UpdatesSinceError'
+    ) {
+      const err = buildOmnivoreError(updatesSince, error)
+      console.error('UpdatesSince error', err)
+      throw err
     }
 
-    if (!data) {
-      throw new Error('UpdatesSince error: No data returned')
-    }
-
-    if (data.updatesSince.__typename === 'UpdatesSinceError') {
-      throw new Error(
-        `UpdatesSince error: ${data.updatesSince.errorCodes.join(', ')}`,
-      )
-    }
-
-    return data.updatesSince
+    return updatesSince
   }
 
   async delete(id: string): Promise<DeleteResponse> {
     const { data, error } = await this._client
       .mutation(DeleteMutation, { input: { articleID: id, bookmark: false } })
       .toPromise()
-    if (error) {
-      throw new Error(`Delete error: ${error.message}`)
+    const deleteArticle = data?.setBookmarkArticle
+    if (
+      error ||
+      !deleteArticle ||
+      deleteArticle.__typename === 'SetBookmarkArticleError'
+    ) {
+      const err = buildOmnivoreError(deleteArticle, error)
+      console.error('Delete error', err)
+      throw err
     }
 
-    if (!data) {
-      throw new Error('Delete error: No data returned')
-    }
-
-    if (data.setBookmarkArticle.__typename === 'SetBookmarkArticleError') {
-      throw new Error(
-        `Delete error: ${data.setBookmarkArticle.errorCodes.join(', ')}`,
-      )
-    }
-
-    return { id: data.setBookmarkArticle.bookmarkedArticle.id }
+    return { id: deleteArticle.bookmarkedArticle.id }
   }
 
   async saveByURL(params: SaveByURLParameters): Promise<SaveByURLResponse> {
@@ -384,18 +374,13 @@ export class Omnivore {
         },
       })
       .toPromise()
-    if (error) {
-      throw new Error(`SaveByURL error: ${error.message}`)
+    const saveUrl = data?.saveUrl
+    if (error || !saveUrl || saveUrl.__typename === 'SaveError') {
+      const err = buildOmnivoreError(saveUrl, error)
+      console.error('SaveByURL error', err)
+      throw err
     }
 
-    if (!data) {
-      throw new Error('SaveByURL error: No data returned')
-    }
-
-    if (data.saveUrl.__typename === 'SaveError') {
-      throw new Error(`SaveByURL error: ${data.saveUrl.errorCodes.join(', ')}`)
-    }
-
-    return { id: data.saveUrl.clientRequestId }
+    return { id: saveUrl.clientRequestId }
   }
 }
