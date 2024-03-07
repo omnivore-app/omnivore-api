@@ -1,6 +1,12 @@
 import { Client, fetchExchange } from 'urql'
 import { graphql } from './graphql'
 
+export interface ClientOptions {
+  authToken: string
+  baseUrl: string
+  timeoutMs?: number
+}
+
 const LabelFragment = graphql(`
   fragment LabelFragment on Label @_unmask {
     name
@@ -294,14 +300,15 @@ export interface SaveByURLResponse {
 export class Omnivore {
   _client: Client
 
-  constructor(endpoint: string, authToken: string) {
+  constructor(clientOptions: ClientOptions) {
     this._client = new Client({
-      url: `${endpoint}/api/graphql`,
+      url: `${clientOptions.baseUrl}/api/graphql`,
       exchanges: [fetchExchange],
       fetchOptions: () => ({
         headers: {
-          Authorization: authToken,
+          Authorization: clientOptions.authToken,
         },
+        timeout: clientOptions.timeoutMs || 0,
       }),
     })
   }
