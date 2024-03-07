@@ -15,4 +15,4 @@ export {
   UpdatesSinceResponse,
 } from './client'
 
-export { OmnivoreError, OmnivoreErrorCode } from './errors'
+export { OmnivoreError, OmnivoreErrorCode, isOmnivoreError } from './errors'

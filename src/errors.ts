@@ -53,3 +53,11 @@ export const buildOmnivoreError = (
 
   return new GraphQLError(data.errorCodes)
 }
+
+export const isOmnivoreError = (error: any): error is OmnivoreError => {
+  return (
+    error instanceof GraphQLError ||
+    error instanceof NetworkError ||
+    error instanceof UnknownError
+  )
+}
