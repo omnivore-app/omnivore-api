@@ -1,4 +1,4 @@
-import { Client, fetchExchange } from 'urql'
+import { Client, fetchExchange } from '@urql/core'
 import { buildOmnivoreError } from './errors'
 import {
   DeleteMutation,

@@ -181,7 +181,7 @@ The `Omnivore` class accepts an options object with the following properties:
 
 ## Requirements
 
-- Node.js 16 or later
+- Node.js 18 or later
 
 ## License
 

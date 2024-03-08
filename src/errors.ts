@@ -1,4 +1,4 @@
-import { CombinedError } from 'urql'
+import { CombinedError } from '@urql/core'
 
 // Error codes are used to identify the type of error that occurred
 export enum OmnivoreErrorCode {
