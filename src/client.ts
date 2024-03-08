@@ -79,7 +79,7 @@ export interface PageInfo {
   totalCount: number | null
 }
 
-export type ItemFormat = 'html' | 'markdown'
+export type ItemFormat = 'html' | 'markdown' | 'highlightedMarkdown'
 
 export interface SearchItemParameters {
   after?: number
