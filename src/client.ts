@@ -13,7 +13,7 @@ export interface ClientOptions {
   timeoutMs?: number
 }
 
-export type PageType =
+export type ItemType =
   | 'ARTICLE'
   | 'BOOK'
   | 'FILE'
@@ -27,6 +27,8 @@ export type PageType =
 
 export interface Label {
   name: string
+  color: string | null
+  description: string | null
 }
 
 export type HighlightType = 'HIGHLIGHT' | 'NOTE' | 'REDACTION'
@@ -44,7 +46,7 @@ export interface Highlight {
   highlightPositionAnchorIndex: number | null
 }
 
-export interface Node {
+export interface Item {
   id: string
   title: string
   siteName: string | null
@@ -56,7 +58,7 @@ export interface Node {
   highlights: Highlight[] | null
   updatedAt: string | null
   savedAt: string
-  pageType: PageType
+  pageType: ItemType
   content: string | null
   publishedAt: string | null
   url: string
@@ -77,17 +79,19 @@ export interface PageInfo {
   totalCount: number | null
 }
 
+export type ItemFormat = 'html' | 'markdown'
+
 export interface SearchItemParameters {
-  after?: string
+  after?: number
   first?: number
-  format?: 'html' | 'markdown'
+  format?: ItemFormat
   includeContent?: boolean
   query?: string
 }
 
 export interface SearchItemResponse {
   edges: {
-    node: Node
+    node: Item
   }[]
   pageInfo: PageInfo
 }
@@ -96,34 +100,34 @@ export interface ItemUpdatesParameters {
   since: string
 }
 
+export type ItemUpdateReason = 'CREATED' | 'UPDATED' | 'DELETED'
+
 export interface ItemUpdatesResponse {
   edges: {
     itemID: string
-    updateReason: 'CREATED' | 'UPDATED' | 'DELETED'
-    node: Node | null
+    updateReason: ItemUpdateReason
+    node: Item | null
   }[]
   pageInfo: PageInfo
 }
+
+export type LibraryItemState =
+  | 'DELETED'
+  | 'ARCHIVED'
+  | 'CONTENT_NOT_FETCHED'
+  | 'FAILED'
+  | 'PROCESSING'
+  | 'SUCCEEDED'
 
 export interface SaveItemByUrlParameters {
   url: string
   clientRequestId?: string
   source?: string
-  state?:
-    | 'DELETED'
-    | 'ARCHIVED'
-    | 'CONTENT_NOT_FETCHED'
-    | 'FAILED'
-    | 'PROCESSING'
-    | 'SUCCEEDED'
+  state?: LibraryItemState
   timezone?: string
   locale?: string
   folder?: string
-  labels?: {
-    name: string
-    color?: string
-    description?: string
-  }[]
+  labels?: Label[]
   publishedAt: string
   savedAt: string
 }
@@ -163,7 +167,10 @@ export class Omnivore {
       params: SearchItemParameters,
     ): Promise<SearchItemResponse> => {
       const { data, error } = await this.client
-        .query(SearchQuery, params)
+        .query(SearchQuery, {
+          ...params,
+          after: params.after ? String(params.after) : undefined,
+        })
         .toPromise()
 
       const search = data?.search

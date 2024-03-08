@@ -20,7 +20,7 @@ Import the `Omnivore` class and create a new instance with your **API Key** and 
 import { Omnivore } from '@omnivore-app/api'
 
 const omnivore = new Omnivore({
-  authToken: 'your-auth-token',
+  authToken: 'your api key',
   baseUrl: 'https://api-prod.omnivore.app',
 })
 
