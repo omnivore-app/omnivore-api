@@ -7,6 +7,7 @@ export {
   ItemFormat,
   ItemType,
   ItemUpdateReason,
+  ItemUpdatesParameters,
   ItemUpdatesResponse,
   Label,
   LibraryItemState,

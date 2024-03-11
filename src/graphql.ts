@@ -128,8 +128,8 @@ export const SearchQuery = graphql(
 
 export const UpdatesSinceQuery = graphql(
   `
-    query UpdatesSince($since: Date!) {
-      updatesSince(since: $since) {
+    query UpdatesSince($after: String, $first: Int, $since: Date!) {
+      updatesSince(after: $after, first: $first, since: $since) {
         __typename
         ... on UpdatesSinceSuccess {
           edges {

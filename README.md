@@ -20,7 +20,7 @@ Import the `Omnivore` class and create a new instance with your **API Key** and 
 import { Omnivore } from '@omnivore-app/api'
 
 const omnivore = new Omnivore({
-  authToken: 'your api key',
+  apiKey: 'your api key',
   baseUrl: 'https://api-prod.omnivore.app',
 })
 
@@ -175,7 +175,7 @@ The `Omnivore` class accepts an options object with the following properties:
 
 | Option      | Default value                     | Type     | Description                                                                          |
 | ----------- | --------------------------------- | -------- | ------------------------------------------------------------------------------------ |
-| `authToken` | `undefined`                       | `string` | API key required for authentication.                                                 |
+| `apiKey`    | `undefined`                       | `string` | API key required for authentication.                                                 |
 | `baseUrl`   | `"https://api-prod.omnivore.app"` | `string` | The base URL for sending API requests. This can be changed to a local-hosted server. |
 | `timeoutMs` | `0`                               | `number` | Number of milliseconds to wait before timeout.                                       |
 

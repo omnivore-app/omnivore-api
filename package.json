@@ -1,6 +1,6 @@
 {
   "name": "@omnivore-app/api",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Omnivore API Client Library for Node.js",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",

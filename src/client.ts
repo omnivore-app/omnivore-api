@@ -8,7 +8,7 @@ import {
 } from './graphql'
 
 export interface ClientOptions {
-  authToken: string
+  apiKey: string
   baseUrl?: string
   timeoutMs?: number
 }
@@ -98,6 +98,8 @@ export interface SearchItemResponse {
 
 export interface ItemUpdatesParameters {
   since: string
+  after?: number
+  first?: number
 }
 
 export type ItemUpdateReason = 'CREATED' | 'UPDATED' | 'DELETED'
@@ -153,7 +155,7 @@ export class Omnivore {
       exchanges: [fetchExchange],
       fetchOptions: () => ({
         headers: {
-          Authorization: clientOptions.authToken,
+          Authorization: clientOptions.apiKey,
         },
         timeout: clientOptions.timeoutMs || 0,
       }),
@@ -188,7 +190,10 @@ export class Omnivore {
       params: ItemUpdatesParameters,
     ): Promise<ItemUpdatesResponse> => {
       const { data, error } = await this.client
-        .query(UpdatesSinceQuery, params)
+        .query(UpdatesSinceQuery, {
+          ...params,
+          after: params.after ? String(params.after) : undefined,
+        })
         .toPromise()
 
       const updatesSince = data?.updatesSince
